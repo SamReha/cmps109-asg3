@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <unistd.h>
@@ -36,13 +37,28 @@ int main (int argc, char** argv) {
    sys_info::set_execname (argv[0]);
    scan_options (argc, argv);
 
+   // Process file arguments
    str_str_map test;
+   ifstream infile;
    for (char** argp = &argv[optind]; argp != &argv[argc]; ++argp) {
+      /*
       str_str_pair pair (*argp, to_string<int> (argp - argv));
       cout << "Before insert: " << pair << endl;
       test.insert (pair);
+      */
+
+      // Try and open the file
+      infile.open(*argp);
+      if (infile.fail()) {
+         cerr << "Couldn't open file: " << *argp << endl;
+         return EXIT_FAILURE;
+      } else {
+         // Parse the file for commands
+         infile.close();
+      }
    }
 
+   /*
    for (str_str_map::iterator itor = test.begin();
         itor != test.end(); ++itor) {
       cout << "During iteration: " << *itor << endl;
@@ -50,6 +66,7 @@ int main (int argc, char** argv) {
 
    str_str_map::iterator itor = test.begin();
    test.erase (itor);
+   */
 
    cout << "EXIT_SUCCESS" << endl;
    return EXIT_SUCCESS;
