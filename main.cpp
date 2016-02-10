@@ -33,6 +33,24 @@ void scan_options (int argc, char** argv) {
    }
 }
 
+void trim_whitespace(string& str) {
+   // Trim left-hand whitespace
+   size_t left_index = str.find_first_not_of(" ");
+   if (left_index != 0 and left_index != string::npos) {
+      str = str.substr(left_index, str.size()-left_index);
+   }
+
+   // Trim right-hand whitespace
+   size_t right_index = str.find_last_not_of(" ");
+   if (right_index != str.size()-1 and right_index != string::npos) {
+      str = str.substr(0, right_index+1);
+   }
+
+   if (right_index == string::npos or left_index == string::npos) {
+      str = "";
+   }
+}
+
 int main (int argc, char** argv) {
    sys_info::set_execname (argv[0]);
    scan_options (argc, argv);
@@ -54,6 +72,46 @@ int main (int argc, char** argv) {
          return EXIT_FAILURE;
       } else {
          // Parse the file for commands
+         string line;
+         while (getline(infile, line)) {
+            trim_whitespace(line);
+            cout << line << endl;
+            string key("");
+            string value("");
+            size_t index_of_equals = line.find_first_of("=");
+
+            // If the line has any data at all...
+            if (line.size() > 0) {
+               // If there's no equal sign character in the line...
+               if (index_of_equals == string::npos and line.size() > 0) {
+                  if (line.at(0) == '#') {
+                     cout << "Command: #" << endl;
+                  } else {
+                     cout << "Command: key" << endl;
+                  }
+               } else {
+                  // If there's only 1 character, it MUST be
+                  // the '=' command
+                  if (line.size() == 1) {
+                     cout << "Command: =" << endl;
+                  } else if (index_of_equals == line.size()-1) {
+                     // If the = is at the very end, it must
+                     // be the delete command
+                     cout << "Command: key =" << endl;
+                  } else if (index_of_equals == 0) {
+                     // If the = is at the front, it must be
+                     // the value search command
+                     cout << "Command: = value" << endl;
+                  } else {
+                     // Else, it must be the key assignment
+                     // command
+                     cout << "Command: key = value" << endl;
+                  }
+               }
+               cout << "-" << key << ": " << value << endl;
+            }
+         }
+
          infile.close();
       }
    }
