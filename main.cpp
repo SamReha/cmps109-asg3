@@ -75,20 +75,16 @@ int main (int argc, char** argv) {
          string line;
          while (getline(infile, line)) {
             trim_whitespace(line);
-            cout << line << endl;
             string key("");
             string value("");
             size_t index_of_equals = line.find_first_of("=");
 
             // If the line has any data at all...
-            if (line.size() > 0) {
-               // If there's no equal sign character in the line...
-               if (index_of_equals == string::npos and line.size() > 0) {
-                  if (line.at(0) == '#') {
-                     cout << "Command: #" << endl;
-                  } else {
-                     cout << "Command: key" << endl;
-                  }
+            if (line.size() > 0 and line.at(0) != '#') {
+               // If there's no '=' in the line:
+               if (index_of_equals == string::npos) {
+                  cout << "Command: key" << endl;
+                  key = line;
                } else {
                   // If there's only 1 character, it MUST be
                   // the '=' command
@@ -98,6 +94,7 @@ int main (int argc, char** argv) {
                      // If the = is at the very end, it must
                      // be the delete command
                      cout << "Command: key =" << endl;
+                     key = line.substr(0, index_of_equals);
                   } else if (index_of_equals == 0) {
                      // If the = is at the front, it must be
                      // the value search command
@@ -106,6 +103,9 @@ int main (int argc, char** argv) {
                      // Else, it must be the key assignment
                      // command
                      cout << "Command: key = value" << endl;
+                     key = line.substr(0, index_of_equals);
+                     value = line.substr(index_of_equals+1,
+                                         line.size());
                   }
                }
                cout << "-" << key << ": " << value << endl;
