@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <unistd.h>
 
 using namespace std;
@@ -69,7 +70,8 @@ void search_by_value(str_str_map& map, const string& value) {
    }
 }
 
-void assign_key(str_str_map& map, const string& key, const string& val) {
+void assign_key(str_str_map& map, const string& key,
+                const string& val) {
    map.insert(str_str_pair(key, val));
    cout << key << " = " << val << endl;
 }
@@ -97,10 +99,12 @@ void process_line(str_str_map& map, string& line) {
             // If there's only 1 character, it MUST be the '=' command
             print_map(map);
          } else if (index_of_equals == line.size()-1) {
-            // If the = is at the very end, it must be the delete command
+            // If the = is at the very end, it must be the delete
+            // command
             key = line.substr(0, index_of_equals);
          } else if (index_of_equals == 0) {
-            // If the = is at the front, it must be the value search command
+            // If the = is at the front, it must be the value search
+            // command
             value = line.substr(1, line.size()-1);
             search_by_value(map, value);
          } else {
@@ -121,21 +125,38 @@ int main (int argc, char** argv) {
    // Process file arguments
    str_str_map map;
    ifstream infile;
+   bool no_files = true;
    for (char** argp = &argv[optind]; argp != &argv[argc]; ++argp) {
-      // Try and open the file
-      infile.open(*argp);
-      if (infile.fail()) {
-         cerr << "Couldn't open file: " << *argp << endl;
-         return EXIT_FAILURE;
+      no_files = false;
+      string line;
+      if (!strcmp(*argp, "=")) {
+         // Try and open the file
+         infile.open(*argp);
+         if (infile.fail()) {
+            cerr << "Couldn't open file: " << *argp << endl;
+            return EXIT_FAILURE;
+         } else {
+            // Parse the file for commands
+            int line_count = 1;
+            while (getline(infile, line)) {
+               cout << *argp << ": " << line_count++ << ": ";
+               process_line(map, line);
+            }
+            infile.close();
+         }
       } else {
-         // Parse the file for commands
-         string line;
-         int line_count = 1;
-         while (getline(infile, line)) {
-            cout << *argp << ": " << line_count++ << ": ";
+         // Start the interactive mode!
+         while (getline(cin, line)) {
             process_line(map, line);
          }
-         infile.close();
+      }
+
+      // Dirty, sloppy hack to detect if no file args were given
+      if (no_files) {
+         // Start the interactive mode!
+         while (getline(cin, line)) {
+            process_line(map, line);
+         }
       }
    }
 
