@@ -69,14 +69,49 @@ void search_by_value(str_str_map& map, const string& value) {
    }
 }
 
-void assign_key(str_str_map& map, const string& key,
-                                  const string& val) {
+void assign_key(str_str_map& map, const string& key, const string& val) {
    map.insert(str_str_pair(key, val));
    cout << key << " = " << val << endl;
 }
 
 void print_map(str_str_map& map) {
    cout << map;
+}
+
+/*** Determine which command has been issued ***/
+void process_line(str_str_map& map, string& line) {
+   cout << line << endl;
+   trim_whitespace(line);
+   string key("");
+   string value("");
+   size_t index_of_equals = line.find_first_of("=");
+
+   // If the line has any data at all...
+   if (line.size() > 0 and line.at(0) != '#') {
+      // If there's no '=' in the line:
+      if (index_of_equals == string::npos) {
+         key = line;
+         search_by_key(map, line);
+      } else {
+         if (line.size() == 1) {
+            // If there's only 1 character, it MUST be the '=' command
+            print_map(map);
+         } else if (index_of_equals == line.size()-1) {
+            // If the = is at the very end, it must be the delete command
+            key = line.substr(0, index_of_equals);
+         } else if (index_of_equals == 0) {
+            // If the = is at the front, it must be the value search command
+            value = line.substr(1, line.size()-1);
+            search_by_value(map, value);
+         } else {
+            // Else, it must be the key assignment command
+            key = line.substr(0, index_of_equals);
+            value = line.substr(index_of_equals+1,
+            line.size());
+            assign_key(map, key, value);
+         }
+      }
+   }
 }
 
 int main (int argc, char** argv) {
@@ -98,43 +133,7 @@ int main (int argc, char** argv) {
          int line_count = 1;
          while (getline(infile, line)) {
             cout << *argp << ": " << line_count++ << ": ";
-            cout << line << endl;
-            trim_whitespace(line);
-            string key("");
-            string value("");
-            size_t index_of_equals = line.find_first_of("=");
-
-            // If the line has any data at all...
-            if (line.size() > 0 and line.at(0) != '#') {
-               // If there's no '=' in the line:
-               if (index_of_equals == string::npos) {
-                  key = line;
-                  search_by_key(map, line);
-               } else {
-                  // If there's only 1 character, it MUST be
-                  // the '=' command
-                  if (line.size() == 1) {
-                     print_map(map);
-                  } else if (index_of_equals == line.size()-1) {
-                     // If the = is at the very end, it must
-                     // be the delete command
-                     key = line.substr(0, index_of_equals);
-                  } else if (index_of_equals == 0) {
-                     // If the = is at the front, it must be
-                     // the value search command
-                     value = line.substr(1, line.size()-1);
-                     search_by_value(map, value);
-                  } else {
-                     // Else, it must be the key assignment
-                     // command
-                     key = line.substr(0, index_of_equals);
-                     value = line.substr(index_of_equals+1,
-                                         line.size());
-
-                     assign_key(map, key, value);
-                  }
-               }
-            }
+            process_line(map, line);
          }
          infile.close();
       }
