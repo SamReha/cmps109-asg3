@@ -30,6 +30,10 @@ listmap<Key,Value,Less>::node::node (node* next, node* prev,
 template <typename Key, typename Value, class Less>
 listmap<Key,Value,Less>::~listmap() {
    TRACE ('l', (void*) this);
+
+   while (anchor() != anchor()->next) {
+      this->erase(this->begin());
+   }
 }
 
 //
@@ -96,6 +100,24 @@ template <typename Key, typename Value, class Less>
 typename listmap<Key,Value,Less>::iterator
 listmap<Key,Value,Less>::erase (iterator position) {
    TRACE ('l', &*position);
+
+   node* someNode = anchor()->next;
+   while (someNode->value.first != position->first
+          and someNode != anchor()) {
+      someNode = someNode->next;
+   }
+
+   if (someNode != anchor()) {
+      someNode->prev->next = someNode->next;
+      someNode->next->prev = someNode->prev;
+      someNode->next = nullptr;
+      someNode->prev = nullptr;
+
+      delete someNode;
+
+      position.erase();
+   }
+
    return iterator();
 }
 
@@ -159,6 +181,15 @@ listmap<Key,Value,Less>::iterator::operator--() {
    TRACE ('l', where);
    where = where->prev;
    return *this;
+}
+
+/*
+   void listmap::iterator::erase()
+*/
+template <typename Key, typename Value, class Less>
+void listmap<Key,Value,Less>::iterator::erase() {
+   this->where = nullptr;
+   //delete this;
 }
 
 //
