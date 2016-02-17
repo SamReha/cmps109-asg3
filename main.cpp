@@ -55,7 +55,7 @@ void trim_whitespace(string& str) {
 void search_by_key(str_str_map& map, const string& key) {
    str_str_map::iterator result = map.find(key);
    if (result != str_str_map::iterator()) {
-      cout << (*result) << endl;
+      cout << result->first << " = " << result->second << endl;
    } else {
       cout << key << ": key not found" << endl;
    }
@@ -64,7 +64,7 @@ void search_by_key(str_str_map& map, const string& key) {
 void search_by_value(str_str_map& map, const string& value) {
    for (str_str_map::iterator it = map.begin(); it != map.end(); ++it) {
       if (it->second == value) {
-         cout << (*it) << endl;
+         cout << it->first << " = " << it->second << endl;
       }
    }
 }
@@ -72,6 +72,7 @@ void search_by_value(str_str_map& map, const string& value) {
 void assign_key(str_str_map& map, const string& key,
                                   const string& val) {
    map.insert(str_str_pair(key, val));
+   cout << key << " = " << val << endl;
 }
 
 void print_map(str_str_map& map) {
@@ -94,7 +95,10 @@ int main (int argc, char** argv) {
       } else {
          // Parse the file for commands
          string line;
+         int line_count = 1;
          while (getline(infile, line)) {
+            cout << *argp << ": " << line_count++ << ": ";
+            cout << line << endl;
             trim_whitespace(line);
             string key("");
             string value("");
@@ -130,27 +134,12 @@ int main (int argc, char** argv) {
                      assign_key(map, key, value);
                   }
                }
-
-               xpair<string,string> pair(key, value);
-               cout << "-" << pair << endl;
             }
          }
-
          infile.close();
       }
    }
 
-   /*
-   for (str_str_map::iterator itor = test.begin();
-        itor != test.end(); ++itor) {
-      cout << "During iteration: " << *itor << endl;
-   }
-
-   str_str_map::iterator itor = test.begin();
-   test.erase (itor);
-   */
-
-   cout << "EXIT_SUCCESS" << endl;
    return EXIT_SUCCESS;
 }
 

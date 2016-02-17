@@ -129,7 +129,7 @@ ostream& operator<<(ostream& out,
                     listmap<Key,Value,Less>& map) {
    for (typename listmap<Key,Value,Less>::iterator it = map.begin();
         it != map.end(); ++it) {
-      out << it->first << " " << it->second << endl;
+      out << it->first << " = " << it->second << endl;
    }
 
    return out;
