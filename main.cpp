@@ -51,20 +51,41 @@ void trim_whitespace(string& str) {
    }
 }
 
+/*** Command Handlers ***/
+void search_by_key(str_str_map& map, const string& key) {
+   str_str_map::iterator result = map.find(key);
+   if (result != str_str_map::iterator()) {
+      cout << (*result) << endl;
+   } else {
+      cout << key << ": key not found" << endl;
+   }
+}
+
+void search_by_value(str_str_map& map, const string& value) {
+   for (str_str_map::iterator it = map.begin(); it != map.end(); ++it) {
+      if (it->second == value) {
+         cout << (*it) << endl;
+      }
+   }
+}
+
+void assign_key(str_str_map& map, const string& key,
+                                  const string& val) {
+   map.insert(str_str_pair(key, val));
+}
+
+void print_map(str_str_map& map) {
+   cout << map;
+}
+
 int main (int argc, char** argv) {
    sys_info::set_execname (argv[0]);
    scan_options (argc, argv);
 
    // Process file arguments
-   str_str_map test;
+   str_str_map map;
    ifstream infile;
    for (char** argp = &argv[optind]; argp != &argv[argc]; ++argp) {
-      /*
-      str_str_pair pair (*argp, to_string<int> (argp - argv));
-      cout << "Before insert: " << pair << endl;
-      test.insert (pair);
-      */
-
       // Try and open the file
       infile.open(*argp);
       if (infile.fail()) {
@@ -83,32 +104,35 @@ int main (int argc, char** argv) {
             if (line.size() > 0 and line.at(0) != '#') {
                // If there's no '=' in the line:
                if (index_of_equals == string::npos) {
-                  cout << "Command: key" << endl;
                   key = line;
+                  search_by_key(map, line);
                } else {
                   // If there's only 1 character, it MUST be
                   // the '=' command
                   if (line.size() == 1) {
-                     cout << "Command: =" << endl;
+                     print_map(map);
                   } else if (index_of_equals == line.size()-1) {
                      // If the = is at the very end, it must
                      // be the delete command
-                     cout << "Command: key =" << endl;
                      key = line.substr(0, index_of_equals);
                   } else if (index_of_equals == 0) {
                      // If the = is at the front, it must be
                      // the value search command
-                     cout << "Command: = value" << endl;
+                     value = line.substr(1, line.size()-1);
+                     search_by_value(map, value);
                   } else {
                      // Else, it must be the key assignment
                      // command
-                     cout << "Command: key = value" << endl;
                      key = line.substr(0, index_of_equals);
                      value = line.substr(index_of_equals+1,
                                          line.size());
+
+                     assign_key(map, key, value);
                   }
                }
-               cout << "-" << key << ": " << value << endl;
+
+               xpair<string,string> pair(key, value);
+               cout << "-" << pair << endl;
             }
          }
 

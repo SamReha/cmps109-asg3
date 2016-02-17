@@ -32,7 +32,6 @@ listmap<Key,Value,Less>::~listmap() {
    TRACE ('l', (void*) this);
 }
 
-
 //
 // iterator listmap::insert (const value_type&)
 //
@@ -40,7 +39,36 @@ template <typename Key, typename Value, class Less>
 typename listmap<Key,Value,Less>::iterator
 listmap<Key,Value,Less>::insert (const value_type& pair) {
    TRACE ('l', &pair << "->" << pair);
-   return iterator();
+
+   // If we're empty, just go ahead and insert a new element
+   if (this->begin() == this->end()) {
+      node* newNode = new node(anchor(), anchor(), pair);
+      anchor()->next = newNode;
+      anchor()->prev = newNode;
+      return newNode;
+   }
+
+   // Else, see if we already exist
+   iterator it = this->find(pair.first);
+   if (it == iterator()) {
+      // If our key does not exist, create it and insert it
+      node* someNode = anchor()->next;
+
+      while (less(someNode->value.first, pair.first)
+             and someNode != anchor()) {
+         someNode = someNode->next;
+      }
+
+      node* newNode = new node(someNode, someNode->prev, pair);
+      someNode->prev->next = newNode;
+      someNode->prev = newNode;
+      return newNode;
+   } else {
+      // Update the value of our node
+      it->second = pair.second;
+      return it;
+   }
+   return it;
 }
 
 //
@@ -48,8 +76,16 @@ listmap<Key,Value,Less>::insert (const value_type& pair) {
 //
 template <typename Key, typename Value, class Less>
 typename listmap<Key,Value,Less>::iterator
-listmap<Key,Value,Less>::find (const key_type& that) const {
+listmap<Key,Value,Less>::find (const key_type& that) {
    TRACE ('l', that);
+
+   for (node* someNode = anchor()->next; someNode != anchor();
+        someNode = someNode->next) {
+      if (someNode->value.first == that) {
+         return someNode;
+      }
+   }
+
    return iterator();
 }
 
@@ -61,6 +97,20 @@ typename listmap<Key,Value,Less>::iterator
 listmap<Key,Value,Less>::erase (iterator position) {
    TRACE ('l', &*position);
    return iterator();
+}
+
+/*
+   operator <<
+*/
+template <typename Key, typename Value, class Less>
+ostream& operator<<(ostream& out,
+                    listmap<Key,Value,Less>& map) {
+   for (typename listmap<Key,Value,Less>::iterator it = map.begin();
+        it != map.end(); ++it) {
+      out << it->first << " " << it->second << endl;
+   }
+
+   return out;
 }
 
 //
@@ -111,7 +161,6 @@ listmap<Key,Value,Less>::iterator::operator--() {
    return *this;
 }
 
-
 //
 // bool listmap::iterator::operator== (const iterator&)
 //
